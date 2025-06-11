@@ -16,19 +16,19 @@ export default function UserForm() {
   });
 
   useEffect(() => {
-    if (id) {
-      axios
-        .get(`/userdetails/${id}`)
-        .then((res) => {
-          setFormData(res.data); // Pre-fill form
-        })
-        .catch((err) => {
-          console.error(
-            "Failed to fetch user:",
-            err.response?.data || err.message
-          );
-        });
-    }
+    if (!id) return; // ✅ Skip fetching if creating a new user
+
+    axios
+      .get(`/userdetails/${id}`)
+      .then((res) => {
+        setFormData(res.data);
+      })
+      .catch((err) => {
+        console.error(
+          "Failed to fetch user:",
+          err.response?.data || err.message
+        );
+      });
   }, [id]);
 
   const handleChange = (e) => {
