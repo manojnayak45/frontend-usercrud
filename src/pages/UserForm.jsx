@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/axios"; // using shared instance
 import Navbar from "../components/Navbar";
-import React from "react";
 
 export default function UserForm() {
   const { id } = useParams(); // If id exists, we're editing
@@ -19,14 +18,15 @@ export default function UserForm() {
   useEffect(() => {
     if (id) {
       axios
-        .get(`http://localhost:8000/api/userdetails/${id}`, {
-          withCredentials: true,
-        })
+        .get(`/userdetails/${id}`)
         .then((res) => {
           setFormData(res.data); // Pre-fill form
         })
         .catch((err) => {
-          console.error("Failed to fetch user:", err);
+          console.error(
+            "Failed to fetch user:",
+            err.response?.data || err.message
+          );
         });
     }
   }, [id]);
@@ -39,21 +39,13 @@ export default function UserForm() {
     e.preventDefault();
     try {
       if (id) {
-        // Update user
-        await axios.put(
-          `http://localhost:8000/api/userdetails/${id}`,
-          formData,
-          { withCredentials: true }
-        );
+        await axios.put(`/userdetails/${id}`, formData);
       } else {
-        // Create new user
-        await axios.post("http://localhost:8000/api/userdetails", formData, {
-          withCredentials: true,
-        });
+        await axios.post("/userdetails", formData);
       }
       navigate("/users");
     } catch (err) {
-      console.error("Failed to save user:", err);
+      console.error("Failed to save user:", err.response?.data || err.message);
     }
   };
 

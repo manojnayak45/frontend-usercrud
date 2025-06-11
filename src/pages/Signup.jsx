@@ -1,23 +1,34 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async () => {
+    if (!username || !email || !password) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    setLoading(true);
     try {
       await axios.post(
-        "http://localhost:8000/api/auth/signup",
+        "/auth/signup",
         { username, email, password },
         { withCredentials: true }
       );
+      alert("Signup successful! Please login.");
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Signup error");
+      console.error("Signup error:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,18 +43,21 @@ export default function Signup() {
           <input
             type="text"
             placeholder="Username"
+            value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
           />
           <input
             type="email"
             placeholder="Email"
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
           />
           <input
             type="password"
             placeholder="Password"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
           />
@@ -51,9 +65,14 @@ export default function Signup() {
 
         <button
           onClick={handleSignup}
-          className="mt-6 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white py-3 rounded-lg font-semibold shadow-sm"
+          disabled={loading}
+          className={`mt-6 w-full py-3 rounded-lg font-semibold shadow-sm transition-colors ${
+            loading
+              ? "bg-blue-300 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+          }`}
         >
-          Sign up
+          {loading ? "Signing up..." : "Sign up"}
         </button>
 
         <p className="mt-4 text-sm text-gray-500 text-center">

@@ -4,13 +4,12 @@ import Login from "./Login";
 import Signup from "./Signup";
 import Todo from "./Todo";
 import UserDetails from "./UserDetails";
-import { useAuth } from "../context/AuthContext"; // ✅ using context
+import { useAuth } from "../context/AuthContext";
 import UserForm from "./UserForm";
 import UserTable from "./UserTable";
 
 export default function App() {
-  const location = useLocation();
-  const { auth, loading } = useAuth(); // ✅ get auth status from context
+  const { auth, loading } = useAuth();
 
   if (loading) {
     return (
@@ -33,12 +32,12 @@ export default function App() {
         path="/login"
         element={auth ? <Navigate to="/users" /> : <Login />}
       />
-
       <Route
         path="/signup"
         element={auth ? <Navigate to="/userform" /> : <Signup />}
       />
 
+      {/* ✅ Protected routes */}
       <Route
         path="/todo"
         element={
@@ -55,10 +54,32 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/users" element={<UserTable />} />
-      <Route path="/users/create" element={<UserForm />} />
-      <Route path="/users/edit/:id" element={<UserForm />} />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute>
+            <UserTable />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users/create"
+        element={
+          <ProtectedRoute>
+            <UserForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users/edit/:id"
+        element={
+          <ProtectedRoute>
+            <UserForm />
+          </ProtectedRoute>
+        }
+      />
 
+      {/* Catch-all route */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

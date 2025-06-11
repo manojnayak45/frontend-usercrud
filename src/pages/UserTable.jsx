@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "../utils/axios"; // Centralized Axios instance
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
-import React from "react";
 
 export default function UserTable() {
   const [userList, setUserList] = useState([]);
@@ -15,29 +14,34 @@ export default function UserTable() {
   }, []);
 
   const fetchUsers = async () => {
-    const res = await axios.get("http://localhost:8000/api/userdetails", {
-      withCredentials: true,
-    });
-    setUserList(res.data);
+    try {
+      const res = await axios.get("/userdetails");
+      setUserList(res.data);
+    } catch (err) {
+      console.error("Error fetching users:", err.response?.data || err.message);
+    }
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:8000/api/userdetails/${id}`, {
-      withCredentials: true,
-    });
-    fetchUsers();
+    try {
+      await axios.delete(`/userdetails/${id}`);
+      fetchUsers();
+    } catch (err) {
+      console.error(
+        "Failed to delete user:",
+        err.response?.data || err.message
+      );
+    }
   };
 
   const handleLogout = async () => {
-    await axios.post(
-      "http://localhost:8000/api/auth/logout",
-      {},
-      {
-        withCredentials: true,
-      }
-    );
-    setAuth(false);
-    navigate("/login");
+    try {
+      await axios.post("/auth/logout", {});
+      setAuth(false);
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err.response?.data || err.message);
+    }
   };
 
   return (

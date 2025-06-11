@@ -1,6 +1,5 @@
-// context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../utils/axios"; // ✅ Centralized Axios instance
 
 // 1. Create context
 const AuthContext = createContext();
@@ -11,21 +10,20 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8000/api/auth/refresh", {
-        withCredentials: true,
-      })
-      .then((res) => {
-        console.log("✅ Token refreshed", res.data);
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get("/auth/refresh");
+        console.log("✅ Token refreshed:", res.data);
         setAuth(true);
-      })
-      .catch((err) => {
-        console.log("❌ Refresh failed", err.response?.data || err.message);
+      } catch (err) {
+        console.log("❌ Refresh failed:", err.response?.data || err.message);
         setAuth(false);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    checkAuth();
   }, []);
 
   return (
@@ -35,5 +33,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// 3. Create custom hook
+// 3. Custom hook for accessing auth context
 export const useAuth = () => useContext(AuthContext);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 
 export default function Todo() {
@@ -16,9 +16,7 @@ export default function Todo() {
 
   const fetchTodos = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/todos", {
-        withCredentials: true,
-      });
+      const res = await axios.get("/todos");
       setTodos(res.data);
     } catch (err) {
       console.error("Not authorized or session expired");
@@ -28,28 +26,18 @@ export default function Todo() {
 
   const addTodo = async () => {
     if (!text.trim()) return;
-    const res = await axios.post(
-      "http://localhost:8000/api/todos",
-      { text },
-      { withCredentials: true }
-    );
+    const res = await axios.post("/todos", { text });
     setTodos([...todos, res.data]);
     setText("");
   };
 
   const toggleTodo = async (id) => {
-    const res = await axios.put(
-      `http://localhost:8000/api/todos/${id}`,
-      {},
-      { withCredentials: true }
-    );
+    const res = await axios.put(`/todos/${id}`);
     setTodos(todos.map((t) => (t._id === id ? res.data : t)));
   };
 
   const deleteTodo = async (id) => {
-    await axios.delete(`http://localhost:8000/api/todos/${id}`, {
-      withCredentials: true,
-    });
+    await axios.delete(`/todos/${id}`);
     setTodos(todos.filter((t) => t._id !== id));
   };
 
@@ -61,11 +49,7 @@ export default function Todo() {
   const updateTodo = async (id) => {
     if (!editingText.trim()) return;
     try {
-      const res = await axios.put(
-        `http://localhost:8000/api/todos/${id}/update`,
-        { text: editingText },
-        { withCredentials: true }
-      );
+      const res = await axios.put(`/todos/${id}/update`, { text: editingText });
       setTodos(todos.map((t) => (t._id === id ? res.data : t)));
       setEditingId(null);
       setEditingText("");
@@ -75,11 +59,7 @@ export default function Todo() {
   };
 
   const handleLogout = async () => {
-    await axios.post(
-      "http://localhost:8000/api/auth/logout",
-      {},
-      { withCredentials: true }
-    );
+    await axios.post("/auth/logout");
     navigate("/login");
   };
 

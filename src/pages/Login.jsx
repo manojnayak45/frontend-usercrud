@@ -1,29 +1,32 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const { setAuth } = useAuth();
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Please enter both email and password");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const res = await axios.post(
-        "http://localhost:8000/api/auth/login",
-        { email, password },
-        { withCredentials: true }
-      );
-      console.log("Login success:", res.data);
-      setAuth(true); // ✅ this is required
-      console.log("Navigating...");
+      const res = await axios.post("/auth/login", { email, password });
+      console.log("✅ Login success:", res.data);
+      setAuth(true);
       navigate("/userform");
     } catch (err) {
-      console.error(err.response?.data);
-      alert("Invalid credentials");
+      console.error("❌ Login failed:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,12 +41,14 @@ export default function Login() {
           <input
             type="email"
             placeholder="Email"
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
             type="password"
             placeholder="Password"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
@@ -51,9 +56,14 @@ export default function Login() {
 
         <button
           onClick={handleLogin}
-          className="mt-6 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white py-3 rounded-lg font-semibold shadow-sm"
+          disabled={loading}
+          className={`mt-6 w-full py-3 rounded-lg font-semibold shadow-sm transition-colors ${
+            loading
+              ? "bg-blue-300 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+          }`}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <p className="mt-4 text-sm text-gray-500 text-center">

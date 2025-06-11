@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axios"; // centralized Axios
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -21,10 +21,15 @@ export default function UserDetails() {
   }, []);
 
   const fetchUsers = async () => {
-    const res = await axios.get("http://localhost:8000/api/userdetails", {
-      withCredentials: true,
-    });
-    setUserList(res.data);
+    try {
+      const res = await axios.get("/userdetails");
+      setUserList(res.data);
+    } catch (err) {
+      console.error(
+        "Failed to fetch users:",
+        err.response?.data || err.message
+      );
+    }
   };
 
   const validate = () => {
@@ -43,23 +48,18 @@ export default function UserDetails() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    if (editingId) {
-      await axios.put(
-        `http://localhost:8000/api/userdetails/${editingId}`,
-        form,
-        {
-          withCredentials: true,
-        }
-      );
-    } else {
-      await axios.post("http://localhost:8000/api/userdetails", form, {
-        withCredentials: true,
-      });
+    try {
+      if (editingId) {
+        await axios.put(`/userdetails/${editingId}`, form);
+      } else {
+        await axios.post("/userdetails", form);
+      }
+      setForm({ name: "", email: "", phone: "", address: "", age: "" });
+      setEditingId(null);
+      fetchUsers();
+    } catch (err) {
+      console.error("Submit failed:", err.response?.data || err.message);
     }
-
-    setForm({ name: "", email: "", phone: "", address: "", age: "" });
-    setEditingId(null);
-    fetchUsers();
   };
 
   const handleEdit = (user) => {
@@ -68,21 +68,19 @@ export default function UserDetails() {
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:8000/api/userdetails/${id}`, {
-      withCredentials: true,
-    });
-    fetchUsers();
+    try {
+      await axios.delete(`/userdetails/${id}`);
+      fetchUsers();
+    } catch (err) {
+      console.error("Delete failed:", err.response?.data || err.message);
+    }
   };
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        "http://localhost:8000/api/auth/logout",
-        {},
-        { withCredentials: true }
-      );
-      setAuth(false); // update context
-      navigate("/login"); // redirect to login page
+      await axios.post("/auth/logout");
+      setAuth(false);
+      navigate("/login");
     } catch (err) {
       console.error("Logout failed:", err.response?.data || err.message);
     }
@@ -91,15 +89,17 @@ export default function UserDetails() {
   return (
     <div className="min-h-screen p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200">
       <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-xl p-8">
-        <h2 className="text-2xl font-semibold mb-6 text-blue-600">
-          User Details Form
-        </h2>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition"
-        >
-          Logout
-        </button>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold text-blue-600">
+            User Details Form
+          </h2>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition"
+          >
+            Logout
+          </button>
+        </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <input
