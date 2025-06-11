@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import axios from "../utils/axios";
 import React from "react";
 
 export default function Navbar() {
@@ -12,33 +12,34 @@ export default function Navbar() {
   const dropdownRef = useRef();
 
   useEffect(() => {
-    // Fetch user profile
-    axios
-      .get("http://localhost:8000/api/auth/profile", {
-        withCredentials: true,
-      })
-      .then((res) => setUser(res.data))
-      .catch((err) => {
-        console.error("Failed to fetch user:", err.message);
-        navigate("/login");
-      });
-  }, []);
-
-  useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
     };
+    useEffect(() => {
+      axios
+        .get("/auth/profile", {
+          withCredentials: true,
+        })
+        .then((res) => setUser(res.data))
+        .catch((err) => {
+          console.error("Failed to fetch user:", err.message);
+          navigate("/login");
+        });
+    }, []);
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
     await axios.post(
-      "http://localhost:8000/api/auth/logout",
+      "/auth/logout",
       {},
-      { withCredentials: true }
+      {
+        withCredentials: true,
+      }
     );
     setAuth(false);
     navigate("/login");
