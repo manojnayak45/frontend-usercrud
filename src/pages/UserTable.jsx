@@ -36,9 +36,16 @@ export default function UserTable() {
 
   const handleLogout = async () => {
     try {
-      await axios.post("/auth/logout", {});
-      setAuth(false);
-      navigate("/login");
+      await axios.post(
+        "/auth/logout",
+        {},
+        {
+          withCredentials: true, // ✅ This is required for cookies to be cleared
+        }
+      );
+
+      setAuth(false); // clear local auth state
+      navigate("/login"); // redirect to login
     } catch (err) {
       console.error("Logout failed:", err.response?.data || err.message);
     }
