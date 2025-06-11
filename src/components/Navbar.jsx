@@ -12,25 +12,29 @@ export default function Navbar() {
   const dropdownRef = useRef();
 
   useEffect(() => {
+    // 1. Fetch user profile once on mount
+    axios
+      .get("/auth/profile", {
+        withCredentials: true,
+      })
+      .then((res) => setUser(res.data))
+      .catch((err) => {
+        console.error("Failed to fetch user:", err.message);
+        navigate("/login");
+      });
+  }, []);
+
+  useEffect(() => {
+    // 2. Handle click outside for dropdown
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
     };
-    useEffect(() => {
-      axios
-        .get("/auth/profile", {
-          withCredentials: true,
-        })
-        .then((res) => setUser(res.data))
-        .catch((err) => {
-          console.error("Failed to fetch user:", err.message);
-          navigate("/login");
-        });
-    }, []);
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleLogout = async () => {
