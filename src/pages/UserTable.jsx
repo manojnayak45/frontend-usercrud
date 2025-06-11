@@ -1,0 +1,107 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/Navbar";
+import React from "react";
+
+export default function UserTable() {
+  const [userList, setUserList] = useState([]);
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    const res = await axios.get("http://localhost:8000/api/userdetails", {
+      withCredentials: true,
+    });
+    setUserList(res.data);
+  };
+
+  const handleDelete = async (id) => {
+    await axios.delete(`http://localhost:8000/api/userdetails/${id}`, {
+      withCredentials: true,
+    });
+    fetchUsers();
+  };
+
+  const handleLogout = async () => {
+    await axios.post(
+      "http://localhost:8000/api/auth/logout",
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+    setAuth(false);
+    navigate("/login");
+  };
+
+  return (
+    <>
+      <Navbar />
+      <div className="p-10 bg-blue-50 min-h-screen">
+        <div className="max-w-5xl mx-auto bg-white p-6 rounded shadow">
+          <div className="flex justify-between mb-4">
+            <h2 className="text-2xl text-blue-600 font-bold">User Table</h2>
+            <div>
+              <Link
+                to="/users/create"
+                className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+              >
+                + Add User
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+
+          <table className="w-full border text-sm">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border p-2">Name</th>
+                <th className="border p-2">Email</th>
+                <th className="border p-2">Phone</th>
+                <th className="border p-2">Address</th>
+                <th className="border p-2">Age</th>
+                <th className="border p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userList.map((u) => (
+                <tr key={u._id}>
+                  <td className="border p-2">{u.name}</td>
+                  <td className="border p-2">{u.email}</td>
+                  <td className="border p-2">{u.phone}</td>
+                  <td className="border p-2">{u.address}</td>
+                  <td className="border p-2">{u.age}</td>
+                  <td className="border p-2 space-x-2">
+                    <Link
+                      to={`/users/edit/${u._id}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(u._id)}
+                      className="text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
