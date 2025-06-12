@@ -9,12 +9,14 @@ import * as Yup from "yup";
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
   email: Yup.string().email("Invalid email").required("Email is required"),
-  phone: Yup.string().optional(),
-  address: Yup.string().optional(),
+  phone: Yup.string()
+    .matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits")
+    .required("Phone number is required"),
+  address: Yup.string().required("Address is required"),
   age: Yup.number()
     .typeError("Age must be a number")
-    .min(1, "Age must be greater than 0")
-    .optional(),
+    .required("Age is required")
+    .min(1, "Age must be greater than 0"),
 });
 
 export default function UserForm() {
